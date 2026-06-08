@@ -3,6 +3,7 @@ import { type RefObject, useMemo, useRef, useState } from "react";
 import type { ScrollBoxRenderable } from "@opentui/core";
 import { useKeyboard } from "@opentui/react";
 
+import { useKeyBoardLayer } from "../../providers/keyboard-layer";
 import { getFilteredCommands } from "./filter-commands";
 import type { Command } from "./types";
 
@@ -22,6 +23,7 @@ export function useCommandMenu(): UseCommandMenuReturn {
   const [showCommandMenu, setShowCommandMenu] = useState(false);
 
   const scrollRef = useRef<ScrollBoxRenderable | null>(null);
+  const { push, pop, isTopLayer } = useKeyBoardLayer();
 
   const commandQuery =
     showCommandMenu && textValue.startsWith("/") ? textValue.slice(1) : "";
@@ -30,6 +32,11 @@ export function useCommandMenu(): UseCommandMenuReturn {
     () => getFilteredCommands(commandQuery),
     [commandQuery],
   );
+
+  const close = () => {
+    setShowCommandMenu(false);
+    pop("command");
+  };
 
   const handleContentChange = (text: string) => {
     setTextValue(text);
@@ -44,24 +51,31 @@ export function useCommandMenu(): UseCommandMenuReturn {
     const prefix = text.startsWith("/") ? text.slice(1) : null;
     if (prefix !== null && !prefix.includes(" ")) {
       setShowCommandMenu(true);
+      push("command", () => {
+        close();
+        return true;
+      });
     } else {
-      setShowCommandMenu(false);
+      close();
     }
   };
 
   // Resolve the command at a specific index
   const resolveCommand = (index: number): Command | undefined => {
     const command = filteredCommands[index];
-    if (command) setShowCommandMenu(false);
+    if (command) {
+      close();
+    }
     return command;
   };
 
   // Arrow keys move selection
   useKeyboard((key) => {
-    if (!showCommandMenu) return;
+    if (!showCommandMenu || !isTopLayer("command")) return;
 
     if (key.name === "escape") {
-      setShowCommandMenu(false);
+      key.preventDefault();
+      close();
     } else if (key.name === "up") {
       key.preventDefault();
       setSelectedIndex((i: number) => {

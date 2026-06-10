@@ -277,4 +277,21 @@ export const THEMES: Theme[] = [
 ];
 
 export const DEFAULT_THEME =
-  THEMES.find((t) => t.name === "Night Fox") ?? THEMES[0]!;
+  THEMES.find((t) => t.name === "Night Fox") ??
+  THEMES[0] ?? {
+    name: "Fallback",
+    colors: {
+      primary: "#FFFFFF",
+      planMode: "#FFFFFF",
+      selection: "#FFFFFF",
+      thinking: "#FFFFFF",
+      success: "#00FF00",
+      error: "#FF0000",
+      info: "#0000FF",
+      background: "#000000",
+      surface: "#1A1A1A",
+      dialogSurface: "#0A0A0A",
+      thinkingBorder: "#333333",
+      dimSeparator: "#AAAAAA",
+    },
+  };

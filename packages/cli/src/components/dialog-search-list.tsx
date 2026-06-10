@@ -1,4 +1,4 @@
-import { type ReactNode, useCallback, useRef, useState } from "react";
+import { type ReactNode, useCallback, useEffect, useRef, useState } from "react";
 
 import { type InputRenderable, TextAttributes } from "@opentui/core";
 import { useKeyboard } from "@opentui/react";
@@ -76,6 +76,28 @@ export function DialogSearchList<T>({
   const filtered = searchValue
     ? items.filter((item) => filterFn(item, searchValue))
     : items;
+
+  // Reconcile selection and window when filtered results count changes externally
+  const [prevFilteredLength, setPrevFilteredLength] = useState(filtered.length);
+  if (filtered.length !== prevFilteredLength) {
+    setPrevFilteredLength(filtered.length);
+    const nextSelected = clampSelectedIndex(selectedIndex, filtered.length);
+    if (nextSelected !== selectedIndex) {
+      setSelectedIndex(nextSelected);
+    }
+    setWindowStart(
+      getWindowStartForIndex(nextSelected, windowStart, filtered.length),
+    );
+  }
+
+  // Synchronize onHighlight preview state reactively whenever selected item changes
+  const selectedItem = filtered[selectedIndex];
+  useEffect(() => {
+    if (selectedItem && onHighlight) {
+      onHighlight(selectedItem);
+    }
+  }, [selectedItem, onHighlight]);
+
   const visibleItems = filtered.slice(
     windowStart,
     windowStart + MAX_VISIBLE_ITEMS,
@@ -83,19 +105,10 @@ export function DialogSearchList<T>({
 
   const handleContentChange = useCallback(() => {
     const text = inputRef.current?.value ?? "";
-    const nextFiltered = text
-      ? items.filter((item) => filterFn(item, text))
-      : items;
-    const item = nextFiltered[0];
-
     setSearchValue(text);
     setSelectedIndex(0);
     setWindowStart(0);
-
-    if (item && onHighlight) {
-      onHighlight(item);
-    }
-  }, [filterFn, items, onHighlight]);
+  }, []);
 
   useKeyboard((key) => {
     if (!isTopLayer("dialog")) return;
@@ -113,10 +126,6 @@ export function DialogSearchList<T>({
         setWindowStart((start) =>
           getWindowStartForIndex(nextIndex, start, filtered.length),
         );
-
-        const item = filtered[nextIndex];
-        if (item && onHighlight) onHighlight(item);
-
         return nextIndex;
       });
     } else if (key.name === "down") {
@@ -127,10 +136,6 @@ export function DialogSearchList<T>({
         setWindowStart((start) =>
           getWindowStartForIndex(nextIndex, start, filtered.length),
         );
-
-        const item = filtered[nextIndex];
-        if (item && onHighlight) onHighlight(item);
-
         return nextIndex;
       });
     }
@@ -160,7 +165,6 @@ export function DialogSearchList<T>({
                 backgroundColor={isSelected ? colors.selection : undefined}
                 onMouseMove={() => {
                   setSelectedIndex(itemIndex);
-                  if (onHighlight) onHighlight(item);
                 }}
               >
                 {renderItem(item, isSelected)}

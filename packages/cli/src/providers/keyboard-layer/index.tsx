@@ -34,18 +34,21 @@ export function KeyboardLayerProvider({
   const renderer = useRenderer();
 
   const push = useCallback((id: string, responder?: Responder) => {
+    if (responder) {
+      responders.current.set(id, responder);
+    }
     setStack((prev) => {
       if (prev.includes(id)) return prev;
-      if (responder) {
-        responders.current.set(id, responder);
-      }
       return [...prev, id];
     });
   }, []);
 
   const pop = useCallback((id: string) => {
     responders.current.delete(id);
-    setStack((prev) => prev.filter((layer) => layer !== id));
+    setStack((prev) => {
+      if (!prev.includes(id)) return prev;
+      return prev.filter((layer) => layer !== id);
+    });
   }, []);
 
   const isTopLayer = useCallback((id: string) => {

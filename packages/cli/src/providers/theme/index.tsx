@@ -20,6 +20,9 @@ export function getInitialTheme(): Theme {
     const preferences = JSON.parse(
       readFileSync(THEME_PREFERENCES_PATH, "utf-8"),
     ) as Partial<ThemePreferences>;
+    if (typeof preferences.themeName !== "string") {
+      return DEFAULT_THEME;
+    }
     const savedTheme = THEMES.find(
       (theme) => theme.name === preferences.themeName,
     );
@@ -49,7 +52,8 @@ function persistTheme(theme: Theme) {
 type ThemeContextValue = {
   colors: ThemeColors;
   currentTheme: Theme;
-  setTheme: (theme: Theme) => void;
+  previewTheme: (theme: Theme) => void;
+  commitTheme: (theme: Theme) => void;
 };
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
@@ -69,7 +73,11 @@ type ThemeProviderProps = {
 export function ThemeProvider({ children }: ThemeProviderProps) {
   const [currentTheme, setCurrentTheme] = useState<Theme>(getInitialTheme);
 
-  const setTheme = useCallback((theme: Theme) => {
+  const previewTheme = useCallback((theme: Theme) => {
+    setCurrentTheme(theme);
+  }, []);
+
+  const commitTheme = useCallback((theme: Theme) => {
     setCurrentTheme(theme);
     persistTheme(theme);
   }, []);
@@ -79,7 +87,8 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
       value={{
         colors: currentTheme.colors,
         currentTheme,
-        setTheme,
+        previewTheme,
+        commitTheme,
       }}
     >
       {children}

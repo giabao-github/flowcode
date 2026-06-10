@@ -39,9 +39,14 @@ function ThemeRoot() {
   const { colors } = useTheme();
 
   useEffect(() => {
-    renderer?.setBackgroundColor(colors.background);
+    if (!renderer) return;
+    renderer.setBackgroundColor(colors.background);
     setTerminalBgColor(colors.background);
   }, [renderer, colors.background]);
+
+  if (!renderer) {
+    return null;
+  }
 
   return (
     <box
@@ -92,5 +97,5 @@ const renderer = await createCliRenderer({
 createRoot(renderer).render(
   <RendererContext.Provider value={renderer}>
     <App />
-  </RendererContext.Provider>
+  </RendererContext.Provider>,
 );

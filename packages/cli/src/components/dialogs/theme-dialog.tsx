@@ -8,7 +8,7 @@ import { DialogSearchList } from "../dialog-search-list";
 
 export function ThemeDialogContent() {
   const dialog = useDialog();
-  const { currentTheme, setTheme } = useTheme();
+  const { currentTheme, previewTheme, commitTheme } = useTheme();
   const originalThemeRef = useRef(currentTheme);
   const confirmedRef = useRef(false);
   const initialSelectedIndex = Math.max(
@@ -20,25 +20,25 @@ export function ThemeDialogContent() {
   useEffect(() => {
     return () => {
       if (!confirmedRef.current) {
-        setTheme(originalThemeRef.current);
+        previewTheme(originalThemeRef.current);
       }
     };
-  }, [setTheme]);
+  }, [previewTheme]);
 
   const handleSelect = useCallback(
     (theme: Theme) => {
       confirmedRef.current = true;
-      setTheme(theme);
+      commitTheme(theme);
       dialog.close();
     },
-    [dialog, setTheme],
+    [dialog, commitTheme],
   );
 
   const handleHighlight = useCallback(
     (theme: Theme) => {
-      setTheme(theme);
+      previewTheme(theme);
     },
-    [setTheme],
+    [previewTheme],
   );
 
   return (

@@ -1,0 +1,297 @@
+export type ThemeColors = {
+  primary: string;
+  planMode: string;
+  selection: string;
+  thinking: string;
+  success: string;
+  error: string;
+  info: string;
+  background: string;
+  surface: string;
+  dialogSurface: string;
+  thinkingBorder: string;
+  dimSeparator: string;
+};
+
+export type Theme = {
+  name: string;
+  colors: ThemeColors;
+};
+
+export const THEMES: Theme[] = [
+  {
+    name: "Night Fox",
+    colors: {
+      primary: "#56D6C2",
+      planMode: "#CF8EF4",
+      selection: "#89B4FA",
+      thinking: "#CF8EF4",
+      success: "#82E0AA",
+      error: "#F26578",
+      info: "#56D6C2",
+      background: "#0D0D12",
+      surface: "#1A1A24",
+      dialogSurface: "#0A0A10",
+      thinkingBorder: "#34344A",
+      dimSeparator: "#A2C3BE",
+    },
+  },
+  {
+    name: "Cappuccino Mocha",
+    colors: {
+      primary: "#89B4FA",
+      planMode: "#CBA6F7",
+      selection: "#74C7EC",
+      thinking: "#CBA6F7",
+      success: "#A6E3A1",
+      error: "#F38BA8",
+      info: "#89DCEB",
+      background: "#1E1E2E",
+      surface: "#313244",
+      dialogSurface: "#181825",
+      thinkingBorder: "#45475A",
+      dimSeparator: "#9CB5DE",
+    },
+  },
+  {
+    name: "Tokyo Night",
+    colors: {
+      primary: "#7AA2F7",
+      planMode: "#BB9AF7",
+      selection: "#73DACA",
+      thinking: "#BB9AF7",
+      success: "#9ECE6A",
+      error: "#F7768E",
+      info: "#2AC3DE",
+      background: "#1A1B26",
+      surface: "#24283B",
+      dialogSurface: "#16161E",
+      thinkingBorder: "#2F3549",
+      dimSeparator: "#95ABDA",
+    },
+  },
+  {
+    name: "Rose Pine",
+    colors: {
+      primary: "#9CCFD8",
+      planMode: "#C4A7E7",
+      selection: "#EBBCBA",
+      thinking: "#C4A7E7",
+      success: "#52B3C4",
+      error: "#EB6F92",
+      info: "#9CCFD8",
+      background: "#191724",
+      surface: "#26233A",
+      dialogSurface: "#111019",
+      thinkingBorder: "#2A2837",
+      dimSeparator: "#A1C8CE",
+    },
+  },
+  {
+    name: "Everforest",
+    colors: {
+      primary: "#6BC4B2",
+      planMode: "#D699B6",
+      selection: "#7FBBB3",
+      thinking: "#D699B6",
+      success: "#A7C080",
+      error: "#E87E80",
+      info: "#5CCFB0",
+      background: "#1E2326",
+      surface: "#272E33",
+      dialogSurface: "#171B1E",
+      thinkingBorder: "#2E383C",
+      dimSeparator: "#A3C2BC",
+    },
+  },
+  {
+    name: "Kanagawa",
+    colors: {
+      primary: "#7FB4CA",
+      planMode: "#957FB8",
+      selection: "#76946A",
+      thinking: "#957FB8",
+      success: "#98BB6C",
+      error: "#E06C75",
+      info: "#7AADA0",
+      background: "#1F1F28",
+      surface: "#2A2A37",
+      dialogSurface: "#16161D",
+      thinkingBorder: "#363646",
+      dimSeparator: "#9DBBC8",
+    },
+  },
+  {
+    name: "Nord",
+    colors: {
+      primary: "#88C0D0",
+      planMode: "#B48EAD",
+      selection: "#81A1C1",
+      thinking: "#B48EAD",
+      success: "#A3BE8C",
+      error: "#D47177",
+      info: "#A3CECE",
+      background: "#1A1D23",
+      surface: "#242933",
+      dialogSurface: "#141619",
+      thinkingBorder: "#2E3440",
+      dimSeparator: "#A2C3CD",
+    },
+  },
+  {
+    name: "Gruvbox Dark",
+    colors: {
+      primary: "#83A598",
+      planMode: "#D3869B",
+      selection: "#FABD2F",
+      thinking: "#D3869B",
+      success: "#B8BB26",
+      error: "#FB4934",
+      info: "#8EC07C",
+      background: "#1D2021",
+      surface: "#282828",
+      dialogSurface: "#161616",
+      thinkingBorder: "#3C3836",
+      dimSeparator: "#A3C2B6",
+    },
+  },
+  {
+    name: "Dracula",
+    colors: {
+      primary: "#8BE9FD",
+      planMode: "#BD93F9",
+      selection: "#FF79C6",
+      thinking: "#BD93F9",
+      success: "#50FA7B",
+      error: "#FF5555",
+      info: "#6BE8E8",
+      background: "#0D1117",
+      surface: "#1E1F29",
+      dialogSurface: "#0A0B10",
+      thinkingBorder: "#2D2F3F",
+      dimSeparator: "#95CEDA",
+    },
+  },
+  {
+    name: "Oxocarbon",
+    colors: {
+      primary: "#78A9FF",
+      planMode: "#BE95FF",
+      selection: "#42C4B8",
+      thinking: "#BE95FF",
+      success: "#42BE65",
+      error: "#FF6E87",
+      info: "#3DDBD9",
+      background: "#161616",
+      surface: "#262626",
+      dialogSurface: "#0D0D0D",
+      thinkingBorder: "#393939",
+      dimSeparator: "#9AAFD6",
+    },
+  },
+  {
+    name: "Ayu Mirage",
+    colors: {
+      primary: "#73D0FF",
+      planMode: "#D2A6FF",
+      selection: "#FFD173",
+      thinking: "#D2A6FF",
+      success: "#AAD94C",
+      error: "#F4604E",
+      info: "#5CCFE6",
+      background: "#1F2430",
+      surface: "#242B38",
+      dialogSurface: "#171C28",
+      thinkingBorder: "#2D3447",
+      dimSeparator: "#9AC1D6",
+    },
+  },
+  {
+    name: "Vesper",
+    colors: {
+      primary: "#FFC799",
+      planMode: "#CF9FFF",
+      selection: "#FFDF80",
+      thinking: "#CF9FFF",
+      success: "#77DD99",
+      error: "#FF6B6B",
+      info: "#80C8FF",
+      background: "#101010",
+      surface: "#1C1C1C",
+      dialogSurface: "#0A0A0A",
+      thinkingBorder: "#2E2E2E",
+      dimSeparator: "#DBBA9F",
+    },
+  },
+  {
+    name: "Melange",
+    colors: {
+      primary: "#E9B872",
+      planMode: "#C9A0DC",
+      selection: "#87CEAC",
+      thinking: "#C9A0DC",
+      success: "#87CEAC",
+      error: "#E88080",
+      info: "#7EC8C8",
+      background: "#1B1916",
+      surface: "#272320",
+      dialogSurface: "#120F0D",
+      thinkingBorder: "#362F28",
+      dimSeparator: "#D3BC9C",
+    },
+  },
+  {
+    name: "Cyberpunk",
+    colors: {
+      primary: "#00FFCC",
+      planMode: "#FF00FF",
+      selection: "#FFE600",
+      thinking: "#FF00FF",
+      success: "#00FF88",
+      error: "#FF2255",
+      info: "#00CFFF",
+      background: "#080B14",
+      surface: "#0F1525",
+      dialogSurface: "#050810",
+      thinkingBorder: "#1A2040",
+      dimSeparator: "#8ECCC0",
+    },
+  },
+  {
+    name: "Alabaster",
+    colors: {
+      primary: "#5C8FD6",
+      planMode: "#9B6FD6",
+      selection: "#4EAAAA",
+      thinking: "#9B6FD6",
+      success: "#4CAF82",
+      error: "#D95F5F",
+      info: "#5AABCB",
+      background: "#191919",
+      surface: "#252525",
+      dialogSurface: "#111111",
+      thinkingBorder: "#333333",
+      dimSeparator: "#9DAFC8",
+    },
+  },
+];
+
+export const DEFAULT_THEME =
+  THEMES.find((t) => t.name === "Night Fox") ??
+  THEMES[0] ?? {
+    name: "Fallback",
+    colors: {
+      primary: "#FFFFFF",
+      planMode: "#FFFFFF",
+      selection: "#FFFFFF",
+      thinking: "#FFFFFF",
+      success: "#00FF00",
+      error: "#FF0000",
+      info: "#0000FF",
+      background: "#000000",
+      surface: "#1A1A1A",
+      dialogSurface: "#0A0A0A",
+      thinkingBorder: "#333333",
+      dimSeparator: "#AAAAAA",
+    },
+  };

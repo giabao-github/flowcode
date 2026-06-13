@@ -3,7 +3,7 @@ import { type ReactNode, createContext, useContext, useEffect } from "react";
 import { createCliRenderer } from "@opentui/core";
 
 import { useTheme } from "../providers/theme";
-import { setTerminalBgColor } from "../utils/terminal";
+import { resetTerminalBgColor, setTerminalBgColor } from "../utils/terminal";
 
 type Renderer = Awaited<ReturnType<typeof createCliRenderer>>;
 
@@ -22,6 +22,12 @@ export function ThemedRoot({ children }: Props) {
     renderer.setBackgroundColor(colors.background);
     setTerminalBgColor(colors.background);
   }, [renderer, colors.background]);
+
+  useEffect(() => {
+    return () => {
+      resetTerminalBgColor();
+    };
+  }, []);
 
   if (!renderer) {
     return null;

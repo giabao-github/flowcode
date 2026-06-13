@@ -3,12 +3,10 @@ import { useLocation, useNavigate } from "react-router";
 
 import { BotMessage, ErrorMessage, UserMessage } from "../components/messages";
 import { SessionShell } from "../components/session-shell";
-import { useTheme } from "../providers/theme";
 
 export function NewSession() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { colors } = useTheme();
 
   const state = location.state as { message?: string } | null;
 

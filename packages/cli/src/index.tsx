@@ -7,7 +7,6 @@ import { RootLayout } from "./layouts/root-layout";
 import { RendererContext } from "./layouts/themed-root";
 import { getInitialTheme } from "./providers/theme";
 import { Home } from "./screens/home";
-import { NewSession } from "./screens/new-session";
 import { Session } from "./screens/session";
 import { resetTerminalBgColor, setTerminalBgColor } from "./utils/terminal";
 
@@ -19,10 +18,6 @@ const router = createMemoryRouter([
       {
         index: true,
         element: <Home />,
-      },
-      {
-        path: "sessions/new",
-        element: <NewSession />,
       },
       {
         path: "sessions/:id",

@@ -1,6 +1,5 @@
 import type { AppType } from "@flowcode/server";
 import { hc } from "hono/client";
 
-export const apiClient = hc<AppType>(
-  process.env.API_URL ?? "http://localhost:3000",
-);
+const baseUrl = process.env.API_URL?.trim() || "http://localhost:3000";
+export const apiClient = hc<AppType>(baseUrl);

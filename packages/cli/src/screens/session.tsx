@@ -121,10 +121,11 @@ export function Session() {
   }, [isNew, newState, navigate, toast]);
 
   const prefetched = useMemo(() => {
-    if (isNew) return null;
+    if (isNew || !id) return null;
     const parsed = sessionLocationSchema.safeParse(location.state);
-    return parsed.success ? parsed.data.session : null;
-  }, [isNew, location.state]);
+    if (!parsed.success) return null;
+    return parsed.data.session.id === id ? parsed.data.session : null;
+  }, [isNew, id, location.state]);
 
   const [session, setSession] = useState<SessionData | null>(prefetched);
 

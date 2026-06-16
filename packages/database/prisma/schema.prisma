@@ -36,7 +36,7 @@ model Session {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   messages Message[]
-  @@index([userId])
+  @@index([userId, createdAt])
 }
 
 model Message {
@@ -51,5 +51,5 @@ model Message {
   duration Int?
   createdAt DateTime @default(now())
   session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  @@index([sessionId])
+  @@index([sessionId, createdAt])
 }

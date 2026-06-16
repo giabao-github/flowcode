@@ -24,20 +24,20 @@ app.use(
     dataCollection: {
       userInfo: true,
       httpHeaders: { request: true, response: true },
-      queryParams: true,
+      queryParams: false,
     },
   }),
 );
 
-app.get("/debug-sentry", () => {
-  // Send a log before throwing the error
-  Sentry.logger.info("User triggered test error", {
-    action: "test_error_endpoint",
+if (process.env.NODE_ENV === "development") {
+  app.get("/debug-sentry", () => {
+    Sentry.logger.info("User triggered test error", {
+      action: "test_error_endpoint",
+    });
+    Sentry.metrics.count("test_counter", 1);
+    throw new Error("My first Sentry error!");
   });
-  // Send a test metric before throwing the error
-  Sentry.metrics.count("test_counter", 1);
-  throw new Error("My first Sentry error!");
-});
+}
 
 app.onError((error, c) => {
   const message =

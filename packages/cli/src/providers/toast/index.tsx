@@ -2,6 +2,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -63,9 +64,12 @@ export function ToastProvider({ children }: ToastProviderProps) {
     [clearCurrentTimeout],
   );
 
-  const value: ToastContextValue = {
-    show,
-  };
+  const value = useMemo(
+    (): ToastContextValue => ({
+      show,
+    }),
+    [show],
+  );
 
   return (
     <ToastContext.Provider value={value}>

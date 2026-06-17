@@ -1,14 +1,23 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router";
 
-import { DEFAULT_CHAT_MODEL_ID } from "@flowcode/shared";
+import { MessageStatus } from "@flowcode/database/enums";
+import {
+  DEFAULT_CHAT_MODEL_ID,
+  type SupportedChatModelId,
+} from "@flowcode/shared";
+import { useKeyboard } from "@opentui/react";
 import type { InferResponseType } from "hono/client";
+import prettyMs from "pretty-ms";
 import { z } from "zod";
 
 import { BotMessage, ErrorMessage, UserMessage } from "../components/messages";
 import { SessionShell } from "../components/session-shell";
+import { useChat } from "../hooks/use-chat";
+import type { ClientMessagePart, Message } from "../hooks/use-chat";
 import { apiClient } from "../lib/api-client";
 import { getErrorMessage } from "../lib/http-errors";
+import { useKeyBoardLayer } from "../providers/keyboard-layer";
 import { useToast } from "../providers/toast";
 
 type SessionData = InferResponseType<
@@ -34,18 +43,101 @@ const newSessionStateSchema = z.object({
   message: z.string().min(1),
 });
 
-function ChatMessage({
-  message,
-}: {
-  message: SessionData["messages"][number];
-}) {
-  if (message.role === "USER") {
+function mapDbMessages(dbMessages: SessionData["messages"]): Message[] {
+  return dbMessages.map((message): Message => {
+    if (message.role === "ERROR") {
+      return { id: message.id, role: "error", content: message.content };
+    }
+    if (message.role === "USER") {
+      return {
+        id: message.id,
+        role: "user",
+        content: message.content,
+        mode: message.mode,
+        model: message.model as SupportedChatModelId,
+      };
+    }
+
+    return {
+      id: message.id,
+      role: "assistant",
+      content: message.content,
+      mode: message.mode,
+      model: message.model as SupportedChatModelId,
+      parts: [{ type: "text", text: message.content }],
+      ...(message.duration !== null
+        ? { duration: prettyMs(message.duration * 1000) }
+        : {}),
+      interrupted: message.status === MessageStatus.INTERRUPTED,
+    };
+  });
+}
+
+function ChatMessage({ message }: { message: Message }) {
+  if (message.role === "user") {
     return <UserMessage message={message.content} />;
   }
-  if (message.role === "ERROR") {
+  if (message.role === "error") {
     return <ErrorMessage message={message.content} />;
   }
-  return <BotMessage content={message.content} model={message.model} />;
+  return (
+    <BotMessage
+      parts={message.parts}
+      mode={message.mode}
+      model={message.model}
+      streaming={false}
+      duration={message.duration}
+      interrupted={message.interrupted}
+    />
+  );
+}
+
+export function SessionChat({ session }: { session: SessionData }) {
+  const [initialMessages] = useState(() => mapDbMessages(session.messages));
+  const { isTopLayer } = useKeyBoardLayer();
+  const { messages, streaming, submit, abort, interrupt } = useChat(
+    session.id,
+    initialMessages,
+  );
+
+  // Stop the pending reply when the user leaves the current session
+  useEffect(() => {
+    return () => abort();
+  }, [abort]);
+
+  // Let the user cancel a reply even before the first streamed chunk arrives
+  useKeyboard((key) => {
+    if (
+      key.name === "escape" &&
+      isTopLayer("base") &&
+      streaming.status === "streaming"
+    ) {
+      key.preventDefault();
+      interrupt();
+    }
+  });
+
+  return (
+    <SessionShell
+      onSubmit={(text) =>
+        submit({ userText: text, mode: "BUILD", model: DEFAULT_CHAT_MODEL_ID })
+      }
+      loading={streaming.status === "streaming"}
+      interruptible={streaming.status === "streaming"}
+    >
+      {messages.map((msg) => (
+        <ChatMessage key={msg.id} message={msg} />
+      ))}
+      {streaming.status === "streaming" && streaming.parts.length > 0 && (
+        <BotMessage
+          parts={streaming.parts}
+          mode={streaming.mode}
+          model={streaming.model}
+          streaming
+        />
+      )}
+    </SessionShell>
+  );
 }
 
 export function Session() {
@@ -182,11 +274,5 @@ export function Session() {
     return <SessionShell onSubmit={() => {}} inputDisabled loading />;
   }
 
-  return (
-    <SessionShell onSubmit={() => {}} inputDisabled>
-      {displaySession.messages.map((msg) => (
-        <ChatMessage key={msg.id} message={msg} />
-      ))}
-    </SessionShell>
-  );
+  return <SessionChat key={displaySession.id} session={displaySession} />;
 }

@@ -9,6 +9,7 @@ type Props = {
   children?: ReactNode;
   inputDisabled?: boolean;
   loading?: boolean;
+  interruptible?: boolean;
   onSubmit: (text: string) => void;
 };
 
@@ -16,6 +17,7 @@ export function SessionShell({
   children,
   inputDisabled = false,
   loading = false,
+  interruptible = false,
   onSubmit,
 }: Props) {
   return (
@@ -44,7 +46,14 @@ export function SessionShell({
         paddingLeft={1}
       >
         <box flexDirection="row" alignItems="center" gap={2}>
-          {loading ? <Spinner /> : null}
+          {loading ? (
+            <>
+              <Spinner />
+              {interruptible ? (
+                <text attributes={TextAttributes.DIM}>Esc to interrupt</text>
+              ) : null}
+            </>
+          ) : null}
         </box>
         <box flexDirection="row" gap={1} flexShrink={0} marginLeft="auto">
           <text>Tab</text>

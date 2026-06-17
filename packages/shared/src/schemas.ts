@@ -51,7 +51,7 @@ export const chatStreamEventSchema = z.discriminatedUnion("type", [
   }),
   z.object({
     type: z.literal("error"),
-    messageId: z.string(),
+    messageId: z.string().optional(),
     error: z.object({
       message: z.string(),
       code: z.string().optional(),

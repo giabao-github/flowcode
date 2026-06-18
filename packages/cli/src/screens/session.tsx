@@ -4,6 +4,7 @@ import { useLocation, useNavigate, useParams } from "react-router";
 import { MessageStatus } from "@flowcode/database/enums";
 import {
   DEFAULT_CHAT_MODEL_ID,
+  SUPPORTED_CHAT_MODELS,
   type SupportedChatModelId,
 } from "@flowcode/shared";
 import { useKeyboard } from "@opentui/react";
@@ -11,10 +12,11 @@ import type { InferResponseType } from "hono/client";
 import prettyMs from "pretty-ms";
 import { z } from "zod";
 
+import { isSupportedChatModel } from "../../../server/src/lib/models";
 import { BotMessage, ErrorMessage, UserMessage } from "../components/messages";
 import { SessionShell } from "../components/session-shell";
 import { useChat } from "../hooks/use-chat";
-import type { ClientMessagePart, Message } from "../hooks/use-chat";
+import type { Message } from "../hooks/use-chat";
 import { apiClient } from "../lib/api-client";
 import { getErrorMessage } from "../lib/http-errors";
 import { useKeyBoardLayer } from "../providers/keyboard-layer";
@@ -43,6 +45,16 @@ const newSessionStateSchema = z.object({
   message: z.string().min(1),
 });
 
+const supportedModelIds = new Set<SupportedChatModelId>(
+  SUPPORTED_CHAT_MODELS.map((model) => model.id),
+);
+
+function coerceModelId(model: string): SupportedChatModelId {
+  return supportedModelIds.has(model as SupportedChatModelId)
+    ? (model as SupportedChatModelId)
+    : DEFAULT_CHAT_MODEL_ID;
+}
+
 function mapDbMessages(dbMessages: SessionData["messages"]): Message[] {
   return dbMessages.map((message): Message => {
     if (message.role === "ERROR") {
@@ -54,7 +66,7 @@ function mapDbMessages(dbMessages: SessionData["messages"]): Message[] {
         role: "user",
         content: message.content,
         mode: message.mode,
-        model: message.model as SupportedChatModelId,
+        model: coerceModelId(message.model),
       };
     }
 
@@ -63,7 +75,7 @@ function mapDbMessages(dbMessages: SessionData["messages"]): Message[] {
       role: "assistant",
       content: message.content,
       mode: message.mode,
-      model: message.model as SupportedChatModelId,
+      model: coerceModelId(message.model),
       parts: [{ type: "text", text: message.content }],
       ...(message.duration !== null
         ? { duration: prettyMs(message.duration * 1000) }

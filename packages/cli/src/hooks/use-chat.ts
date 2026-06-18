@@ -218,7 +218,7 @@ export function useChat(sessionId: string, initialMessages: Message[]) {
             updateMessages((prev) => [
               ...prev,
               {
-                id: event.messageId,
+                id: event.messageId ?? crypto.randomUUID(),
                 role: "assistant",
                 content: fullText,
                 mode: activeStream.mode,
@@ -228,7 +228,7 @@ export function useChat(sessionId: string, initialMessages: Message[]) {
               },
             ]);
 
-            break;
+            return;
           }
           case "error": {
             updateMessages((prev) => [
@@ -239,7 +239,7 @@ export function useChat(sessionId: string, initialMessages: Message[]) {
                 content: event.error.message,
               },
             ]);
-            break;
+            return;
           }
         }
       }
@@ -302,6 +302,7 @@ export function useChat(sessionId: string, initialMessages: Message[]) {
 
   const resume = useCallback(
     async ({ mode, model }: Omit<SubmitParams, "userText">) => {
+      if (activeStreamRef.current) return;
       await runStream({
         mode,
         model,

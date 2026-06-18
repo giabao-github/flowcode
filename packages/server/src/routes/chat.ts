@@ -9,6 +9,8 @@ import { z } from "zod";
 
 import { isSupportedChatModel, resolveChatModel } from "../lib/models";
 
+const MAX_HISTORY_MESSAGES = 40;
+
 const submitSchema = z.object({
   content: z.string(),
   mode: z.enum(Mode),
@@ -20,8 +22,6 @@ const submitValidator = zValidator("json", submitSchema, (result, c) => {
     return c.json({ error: "Invalid request body" }, 400);
   }
 });
-
-const activeResumeSessionIds = new Set<string>();
 
 // Strip error messages and empty assistant messages from the conversation
 function buildConversationHistory(
@@ -49,11 +49,24 @@ function getResumableUserMessage(
     role: "USER" | "ASSISTANT" | "ERROR";
     model: string;
     mode: Mode;
+    status: MessageStatus;
   }[],
 ) {
-  const lastMessage = messages[messages.length - 1];
-  if (!lastMessage || lastMessage.role !== "USER") return null;
-  return lastMessage;
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const message = messages[i];
+    if (!message) continue;
+
+    if (
+      message.role === "ASSISTANT" &&
+      message.status === MessageStatus.COMPLETE
+    ) {
+      return null;
+    }
+    if (message.role === "USER") {
+      return message;
+    }
+  }
+  return null;
 }
 
 type StreamParams = {
@@ -201,16 +214,27 @@ const app = new Hono()
       );
     }
 
-    if (activeResumeSessionIds.has(sessionId)) {
+    const now = new Date();
+    const lockTimeout = new Date(now.getTime() - 5 * 60 * 1000);
+
+    const updated = await db.session.updateMany({
+      where: {
+        id: sessionId,
+        OR: [{ lockedAt: null }, { lockedAt: { lt: lockTimeout } }],
+      },
+      data: { lockedAt: now },
+    });
+
+    if (updated.count === 0) {
       return c.json(
-        { error: "This session already has an active resume" },
+        { error: "This session already has an active generation" },
         409,
       );
     }
 
-    activeResumeSessionIds.add(sessionId);
-
-    const history = buildConversationHistory(session.messages);
+    const history = buildConversationHistory(
+      session.messages.slice(-MAX_HISTORY_MESSAGES),
+    );
     const abortController = new AbortController();
 
     try {
@@ -230,11 +254,17 @@ const app = new Hono()
               abortController,
             });
           } finally {
-            activeResumeSessionIds.delete(sessionId);
+            await db.session.updateMany({
+              where: { id: sessionId },
+              data: { lockedAt: null },
+            });
           }
         },
         async (error, stream) => {
-          activeResumeSessionIds.delete(sessionId);
+          await db.session.updateMany({
+            where: { id: sessionId },
+            data: { lockedAt: null },
+          });
           const message =
             error instanceof Error ? error.message : String(error);
           const errorEvent: ChatStreamEvent = {
@@ -248,7 +278,10 @@ const app = new Hono()
         },
       );
     } catch (error) {
-      activeResumeSessionIds.delete(sessionId);
+      await db.session.updateMany({
+        where: { id: sessionId },
+        data: { lockedAt: null },
+      });
       throw error;
     }
   })
@@ -266,6 +299,24 @@ const app = new Hono()
 
     const data = c.req.valid("json");
 
+    const now = new Date();
+    const lockTimeout = new Date(now.getTime() - 5 * 60 * 1000);
+
+    const updated = await db.session.updateMany({
+      where: {
+        id: sessionId,
+        OR: [{ lockedAt: null }, { lockedAt: { lt: lockTimeout } }],
+      },
+      data: { lockedAt: now },
+    });
+
+    if (updated.count === 0) {
+      return c.json(
+        { error: "This session already has an active generation" },
+        409,
+      );
+    }
+
     await db.message.create({
       data: {
         sessionId,
@@ -278,7 +329,7 @@ const app = new Hono()
     });
 
     const history = buildConversationHistory([
-      ...session.messages, // TODO: limit to a specific number of last messages
+      ...session.messages.slice(-MAX_HISTORY_MESSAGES),
       {
         role: "USER" as const,
         content: data.content,
@@ -288,33 +339,53 @@ const app = new Hono()
 
     const abortController = new AbortController();
 
-    return streamSSE(
-      c,
-      async (stream) => {
-        stream.onAbort(() => {
-          abortController.abort();
-        });
+    try {
+      return streamSSE(
+        c,
+        async (stream) => {
+          stream.onAbort(() => {
+            abortController.abort();
+          });
 
-        await streamAIResponse(stream, {
-          sessionId,
-          model: data.model,
-          history,
-          mode: data.mode,
-          abortController,
-        });
-      },
-      async (error, stream) => {
-        const message = error instanceof Error ? error.message : String(error);
-        const errorEvent: ChatStreamEvent = {
-          type: "error",
-          error: { message },
-        };
-        await stream.writeSSE({
-          event: "error",
-          data: JSON.stringify(errorEvent),
-        });
-      },
-    );
+          try {
+            await streamAIResponse(stream, {
+              sessionId,
+              model: data.model,
+              history,
+              mode: data.mode,
+              abortController,
+            });
+          } finally {
+            await db.session.updateMany({
+              where: { id: sessionId },
+              data: { lockedAt: null },
+            });
+          }
+        },
+        async (error, stream) => {
+          await db.session.updateMany({
+            where: { id: sessionId },
+            data: { lockedAt: null },
+          });
+          const message =
+            error instanceof Error ? error.message : String(error);
+          const errorEvent: ChatStreamEvent = {
+            type: "error",
+            error: { message },
+          };
+          await stream.writeSSE({
+            event: "error",
+            data: JSON.stringify(errorEvent),
+          });
+        },
+      );
+    } catch (error) {
+      await db.session.updateMany({
+        where: { id: sessionId },
+        data: { lockedAt: null },
+      });
+      throw error;
+    }
   });
 
 export default app;

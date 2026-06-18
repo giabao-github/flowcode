@@ -49,6 +49,30 @@ export const SUPPORTED_CHAT_MODELS = [
     provider: "openai",
     pricing: { inputUsdPerMillionTokens: 0.2, outputUsdPerMillionTokens: 1.25 },
   },
+  {
+    id: "gemini-3-flash-preview",
+    name: "Gemini 3 Flash Preview",
+    provider: "google",
+    pricing: { inputUsdPerMillionTokens: 1.5, outputUsdPerMillionTokens: 4.5 },
+  },
+  {
+    id: "gemini-3.5-flash",
+    name: "Gemini 3.5 Flash",
+    provider: "google",
+    pricing: { inputUsdPerMillionTokens: 1.5, outputUsdPerMillionTokens: 4.5 },
+  },
+  {
+    id: "gemini-3.1-pro-preview",
+    name: "Gemini 3.1 Pro Preview",
+    provider: "google",
+    pricing: { inputUsdPerMillionTokens: 2, outputUsdPerMillionTokens: 6 },
+  },
+  {
+    id: "gemini-pro-latest",
+    name: "Gemini Pro Latest",
+    provider: "google",
+    pricing: { inputUsdPerMillionTokens: 3, outputUsdPerMillionTokens: 9 },
+  },
 ] as const satisfies readonly SupportedChatModelDefinition[];
 
 export type SupportedChatModel = (typeof SUPPORTED_CHAT_MODELS)[number];
@@ -60,7 +84,7 @@ export function findSupportedChatModel(
   return SUPPORTED_CHAT_MODELS.find((model) => model.id === modelId);
 }
 
-export const DEFAULT_CHAT_MODEL_ID: SupportedChatModelId = "claude-opus-4.6";
+export const DEFAULT_CHAT_MODEL_ID: SupportedChatModelId = "gemini-3.5-flash";
 
 type IsUniqueIds<
   T extends readonly { id: string }[],

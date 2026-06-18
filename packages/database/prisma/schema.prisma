@@ -33,6 +33,7 @@ model Session {
   userId String
   title String
   cwd String?
+  lockedAt DateTime?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   messages Message[]

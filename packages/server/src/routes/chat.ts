@@ -23,6 +23,10 @@ const submitValidator = zValidator("json", submitSchema, (result, c) => {
   }
 });
 
+function getLockTimeoutDate(now: Date, offsetMinutes = 5): Date {
+  return new Date(now.getTime() - offsetMinutes * 60 * 1000);
+}
+
 // Strip error messages and empty assistant messages from the conversation
 function buildConversationHistory(
   messages: {
@@ -215,7 +219,7 @@ const app = new Hono()
     }
 
     const now = new Date();
-    const lockTimeout = new Date(now.getTime() - 5 * 60 * 1000);
+    const lockTimeout = getLockTimeoutDate(now, 5);
 
     const updated = await db.session.updateMany({
       where: {
@@ -300,7 +304,7 @@ const app = new Hono()
     const data = c.req.valid("json");
 
     const now = new Date();
-    const lockTimeout = new Date(now.getTime() - 5 * 60 * 1000);
+    const lockTimeout = getLockTimeoutDate(now, 5);
 
     const updated = await db.session.updateMany({
       where: {

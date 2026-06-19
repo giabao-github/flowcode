@@ -95,7 +95,15 @@ export function SessionsDialogContent() {
             fg={isSelected ? "black" : undefined}
             attributes={TextAttributes.DIM}
           >
-            {format(new Date(session.createdAt), "hh:mm a")}
+            {(() => {
+              try {
+                const date = new Date(session.createdAt);
+                if (isNaN(date.getTime())) return "Invalid date";
+                return format(date, "hh:mm a");
+              } catch {
+                return "Invalid date";
+              }
+            })()}
           </text>
         </>
       )}

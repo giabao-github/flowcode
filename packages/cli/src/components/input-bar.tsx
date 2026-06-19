@@ -1,10 +1,13 @@
 import { useCallback, useEffect, useRef } from "react";
+import { useNavigate } from "react-router";
 
+import { Mode } from "@flowcode/database/enums";
 import type { KeyBinding, TextareaRenderable } from "@opentui/core";
-import { useRenderer } from "@opentui/react";
+import { useKeyboard, useRenderer } from "@opentui/react";
 
 import { useDialog } from "../providers/dialog";
 import { useKeyBoardLayer } from "../providers/keyboard-layer";
+import { usePromptConfig } from "../providers/prompt-config";
 import { useTheme } from "../providers/theme";
 import { useToast } from "../providers/toast";
 import { EmptyBorder } from "./border";
@@ -28,10 +31,12 @@ export function InputBar({ onSubmit, disabled = false }: Props) {
   const textareaRef = useRef<TextareaRenderable | null>(null);
   const onSubmitRef = useRef<() => Promise<void>>(async () => {});
   const renderer = useRenderer();
+  const navigate = useNavigate();
   const toast = useToast();
   const dialog = useDialog();
   const { colors } = useTheme();
   const { isTopLayer, setResponder } = useKeyBoardLayer();
+  const { mode, toggleMode, setMode, model, setModel } = usePromptConfig();
 
   const {
     showCommandMenu,
@@ -80,12 +85,17 @@ export function InputBar({ onSubmit, disabled = false }: Props) {
           exit: () => renderer.destroy(),
           toast,
           dialog,
+          navigate,
+          mode,
+          setMode,
+          model,
+          setModel,
         });
       } else {
         textarea.insertText(command.value + " ");
       }
     },
-    [renderer, toast, dialog],
+    [renderer, toast, dialog, mode, navigate, setMode, model, setModel],
   );
 
   const handleCommandExecute = useCallback(
@@ -95,6 +105,15 @@ export function InputBar({ onSubmit, disabled = false }: Props) {
     },
     [handleCommand, handleCommandError, resolveCommand],
   );
+
+  useKeyboard((key) => {
+    if (disabled) return;
+    if (!isTopLayer("base")) return;
+    if (key.name === "tab") {
+      key.preventDefault();
+      toggleMode();
+    }
+  });
 
   // Wire up text area submit handler once, so it always reads the latest state.
   useEffect(() => {
@@ -138,7 +157,7 @@ export function InputBar({ onSubmit, disabled = false }: Props) {
     <box width="100%" alignItems="center">
       <box
         border={["left"]}
-        borderColor={colors.primary}
+        borderColor={mode === Mode.BUILD ? colors.primary : colors.planMode}
         width="100%"
         customBorderChars={{
           ...EmptyBorder,

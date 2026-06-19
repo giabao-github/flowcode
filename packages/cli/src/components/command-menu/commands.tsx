@@ -1,4 +1,11 @@
-import { ThemeDialogContent } from "../dialogs";
+import { SUPPORTED_CHAT_MODELS } from "@flowcode/shared";
+
+import {
+  ModelsDialogContent,
+  ModesDialogContent,
+  SessionsDialogContent,
+  ThemeDialogContent,
+} from "../dialogs";
 import type { Command } from "./types";
 
 export const COMMANDS: Command[] = [
@@ -7,19 +14,22 @@ export const COMMANDS: Command[] = [
     description: "Start a new conversation",
     value: "/new",
     action: (ctx) => {
-      ctx.toast.show({
-        message: "Starting new conversation...",
-      });
+      ctx.navigate("/");
     },
   },
   {
-    name: "agents",
-    description: "Switch current agent",
-    value: "/agents",
+    name: "modes",
+    description: "Switch current mode",
+    value: "/modes",
     action: (ctx) => {
       ctx.dialog.open({
         title: "Select Mode",
-        children: <text>Agents selection will be coming soon...</text>,
+        children: (
+          <ModesDialogContent
+            currentMode={ctx.mode}
+            onSelectMode={ctx.setMode}
+          />
+        ),
       });
     },
   },
@@ -30,7 +40,13 @@ export const COMMANDS: Command[] = [
     action: (ctx) => {
       ctx.dialog.open({
         title: "Select Model",
-        children: <text>Model selection will be coming soon...</text>,
+        children: (
+          <ModelsDialogContent
+            models={SUPPORTED_CHAT_MODELS.map((model) => model.id)}
+            currentModel={ctx.model}
+            onSelectModel={ctx.setModel}
+          />
+        ),
       });
     },
   },
@@ -39,8 +55,9 @@ export const COMMANDS: Command[] = [
     description: "Browse past sessions",
     value: "/sessions",
     action: (ctx) => {
-      ctx.toast.show({
-        message: "Loading sessions...",
+      ctx.dialog.open({
+        title: "List of sessions",
+        children: <SessionsDialogContent />,
       });
     },
   },

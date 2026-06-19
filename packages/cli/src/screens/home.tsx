@@ -19,7 +19,7 @@ export function Home() {
       alignItems="center"
       justifyContent="center"
       flexGrow={1}
-      gap={2}
+      gap={6}
       position="relative"
       width="100%"
       height="100%"

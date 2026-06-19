@@ -1,9 +1,15 @@
+import { Mode } from "@flowcode/database/enums";
 import "opentui-spinner/react";
 
 import { useTheme } from "../providers/theme";
 
-export function Spinner() {
-  const { colors } = useTheme();
+type Props = {
+  mode?: Mode;
+};
 
-  return <spinner name="aesthetic" color={colors.primary} />;
+export function Spinner({ mode = Mode.BUILD }: Props) {
+  const { colors } = useTheme();
+  const activeColor = mode === Mode.PLAN ? colors.planMode : colors.primary;
+
+  return <spinner name="aesthetic" color={activeColor} />;
 }

@@ -5,7 +5,7 @@ export function Header() {
         flexDirection="row"
         justifyContent="center"
         alignItems="center"
-        gap={0.5}
+        gap={1}
       >
         <ascii-font font="tiny" text="Flow" color="orange" />
         <ascii-font font="tiny" text="Code" />
